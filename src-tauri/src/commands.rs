@@ -161,7 +161,7 @@ pub fn open_service_ui(app: AppHandle, label: String, url: String) -> Result<(),
     }
     let parsed = url.parse::<tauri::Url>().map_err(|e| format!("无效 URL: {}", e))?;
     WebviewWindowBuilder::new(&app, &label, WebviewUrl::External(parsed))
-        .title("WebUI Shell")
+        .title("WebUI Hub")
         .inner_size(1200.0, 800.0)
         .build()
         .map_err(|e| e.to_string())?;

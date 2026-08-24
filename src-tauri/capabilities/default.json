@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "WebUI Shell 默认能力（允许窗口、shell 执行、核心命令）",
+  "description": "WebUI Hub 默认能力（允许窗口、shell 执行、核心命令）",
   "windows": ["main"],
   "permissions": [
     "core:default",

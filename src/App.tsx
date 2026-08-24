@@ -196,7 +196,7 @@ export default function App() {
       />
       <main className="main">
         <div className="main-header">
-          <span>{selectedService ? selectedService.label : 'WebUI Shell'}</span>
+          <span>{selectedService ? selectedService.label : 'WebUI Hub'}</span>
           {busy && <span className="busy">处理中…</span>}
         </div>
         {selectedService ? (

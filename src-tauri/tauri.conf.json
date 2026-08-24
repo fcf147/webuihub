@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "WebUI Shell",
+  "productName": "WebUI Hub",
   "version": "0.1.0",
-  "identifier": "com.webuishell.desktop",
+  "identifier": "com.webuihub.desktop",
   "build": {
     "frontendDist": "dist",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "WebUI Shell",
+        "title": "WebUI Hub",
         "width": 1440,
         "height": 900,
         "minWidth": 960,

@@ -1,7 +1,7 @@
 {
-  "name": "webui-shell",
+  "name": "webuihub",
   "version": "0.1.0",
-  "description": "WebUI Shell — 通用本地 AI 服务桌面壳（Tauri 2.x + Rust 后端，第一步 WSL 后端仅 DeepSeek Harness）",
+  "description": "WebUI Hub — 各种 WebUI 服务的桌面集线器（Tauri 2.x + Rust 后端）",
   "type": "module",
   "license": "MIT",
   "scripts": {

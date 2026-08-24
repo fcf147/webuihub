@@ -49,7 +49,7 @@ export function Sidebar(props: SidebarProps) {
 
   return (
     <aside className="sidebar">
-      <div className="brand">WebUI Shell</div>
+      <div className="brand">WebUI Hub</div>
 
       <section className="sidebar-section">
         <div className="section-title">WSL 后端</div>

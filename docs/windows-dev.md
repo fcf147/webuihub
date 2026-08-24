@@ -1,6 +1,6 @@
-# Windows 开发构建指南（WebUI Shell）
+# Windows 开发构建指南（WebUI Hub）
 
-本文档面向在 **Windows 11 + WSL2** 开发机上继续开发、构建 WebUI Shell 的开发者。
+本文档面向在 **Windows 11 + WSL2** 开发机上继续开发、构建 WebUI Hub 的开发者。
 骨架代码已在 Linux 构建机产出但**未编译验证**，所有 Rust 后端逻辑需在本机真正跑通。
 
 ---
@@ -130,8 +130,8 @@ npm run tauri build
 - 先 `beforeBuildCommand`（`npm run build`：tsc + vite build 产物到 `dist/`），
   再用 Rust 编译 release 并生成安装包。
 - 产物在 `src-tauri/target/release/bundle/`：
-  - `msi/WebUI Shell_<version>_x64_en-US.msi`
-  - `nsis/WebUI Shell_<version>_x64-setup.exe`
+  - `msi/WebUI Hub_<version>_x64_en-US.msi`
+  - `nsis/WebUI Hub_<version>_x64-setup.exe`
 
 ### 4.1 关于签名（可选）
 

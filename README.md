@@ -1,7 +1,7 @@
-# WebUI Shell（桌面壳）
+# WebUI Hub
 
-基于 **Tauri 2.x（Rust + 系统 WebView）** 的通用本地 AI 服务桌面壳。本仓库即桌面壳项目根。
-第一步后端针对 **Windows + WSL2**，仅实现 **DeepSeek Harness** 一个服务：壳内置 WSL 生命周期管理，在默认发行版内安装并启动 `dsh web`，端口经 WSL2 转发到 Windows `127.0.0.1` 后由壳内 WebView 加载。
+基于 **Tauri 2.x（Rust + 系统 WebView）** 的各种 WebUI 服务桌面集线器。本仓库即项目根。
+第一步后端针对 **Windows + WSL2**，已实现 **DeepSeek Harness** 与 **Open WebUI** 两个服务：壳内置 WSL 生命周期管理，在默认发行版内安装并启动服务，端口经 WSL2 转发到 Windows `127.0.0.1` 后由壳内 WebView 加载。
 
 **Windows 开发机构建步骤**见 [`docs/windows-dev.md`](./docs/windows-dev.md)。
 

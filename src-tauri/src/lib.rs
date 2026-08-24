@@ -1,4 +1,4 @@
-//! WebUI Shell — Tauri 应用入口（Rust 后端）
+//! WebUI Hub — Tauri 应用入口（Rust 后端）
 
 mod commands;
 mod health;
@@ -33,5 +33,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running WebUI Shell");
+        .expect("error while running WebUI Hub");
 }
