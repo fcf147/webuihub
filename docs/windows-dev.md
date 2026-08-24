@@ -195,13 +195,13 @@ npm run tauri build
 
 ## 8. 提交与同步
 
-开发完成后在 `webui-shell` 分支提交并推送到 GitHub：
+开发完成后在 `webuihub` 分支提交并推送到 GitHub：
 
 ```powershell
-git checkout webui-shell
+git checkout webuihub
 git add -A
 git commit -m "feat(desktop): ..."
-git push -u origin webui-shell
+git push -u origin webuihub
 ```
 
 > 注意：不要提交 `node_modules/`、`src-tauri/target/`、`dist/`（已在 `.gitignore`）。

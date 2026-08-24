@@ -3,7 +3,7 @@ name: Build Windows Portable
 on:
   workflow_dispatch:      # 手动触发
   push:
-    branches: [main, master, webui-shell]
+    branches: [main, master, webuihub]
     tags: ['v*']          # 打 tag 时自动构建
 
 permissions:
