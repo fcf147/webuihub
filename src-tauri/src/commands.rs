@@ -37,19 +37,9 @@ pub fn install_wsl() -> wsl::InstallResult {
     wsl::install()
 }
 
-// 编译期内嵌的安装引导脚本（项目根 scripts/）。
-// 相对路径基于 src-tauri/src/commands.rs -> ../.. = 仓库根。
-// include_str! 保证：脚本内容随二进制一起分发，绿色版 exe 拷走即用，无需远程拉取。
-const BOOTSTRAP_SCRIPT_DSH: &str = include_str!("../../scripts/bootstrap-dsh.sh");
-const BOOTSTRAP_SCRIPT_OPENWEBUI: &str = include_str!("../../scripts/bootstrap-openwebui.sh");
-
-/// 根据服务 id 返回对应的内置 bootstrap 脚本内容。
-fn builtin_bootstrap(id: &str) -> &'static str {
-    match id {
-        "open_webui" => BOOTSTRAP_SCRIPT_OPENWEBUI,
-        _ => BOOTSTRAP_SCRIPT_DSH,
-    }
-}
+// 编译期自动生成的脚本注册表（build.rs 枚举 scripts/ 下所有 .sh 文件）。
+// 新增脚本只需放到 scripts/ 目录下，无需修改 Rust 代码。
+include!(concat!(env!("OUT_DIR"), "/generated_scripts.rs"));
 
 // 编译期内嵌的默认服务配置（项目根 config/services.yaml）。
 // 首次运行时会被写出到 exe 旁的 config/services.yaml，供用户自由修改/新增服务。
@@ -72,13 +62,10 @@ pub fn ensure_runtime_files() {
             let _ = std::fs::write(&config_path, DEFAULT_SERVICES_YAML);
         }
     }
-    // scripts/bootstrap-*.sh（每个服务一个引导脚本）
+    // scripts/bootstrap-*.sh（自动释放所有内置脚本）
     let scripts_dir = dir.join("scripts");
     if std::fs::create_dir_all(&scripts_dir).is_ok() {
-        for (name, content) in [
-            ("bootstrap-dsh.sh", BOOTSTRAP_SCRIPT_DSH),
-            ("bootstrap-openwebui.sh", BOOTSTRAP_SCRIPT_OPENWEBUI),
-        ] {
+        for (name, content) in all_scripts() {
             let script_path = scripts_dir.join(name);
             if !script_path.exists() {
                 let _ = std::fs::write(&script_path, content);
@@ -87,18 +74,43 @@ pub fn ensure_runtime_files() {
     }
 }
 
-/// 读取 exe 旁的外部 bootstrap 脚本；若不存在则回退内置默认（按服务 id 区分）。
-fn load_bootstrap_script(id: &str) -> String {
+/// 读取 exe 旁的外部 bootstrap 脚本；若不存在则回退内置默认。
+/// 优先使用 script_url 指定的文件名，兼容旧版按 id 猜测的命名。
+fn load_bootstrap_script(id: &str, script_url: Option<&str>) -> String {
     let Some(dir) = exe_dir() else {
-        return builtin_bootstrap(id).to_string();
+        return builtin_fallback(id).to_string();
     };
-    // 外部脚本命名约定：bootstrap-<service_id>.sh
-    let fname = match id {
-        "open_webui" => "bootstrap-openwebui.sh",
-        _ => "bootstrap-dsh.sh",
-    };
+    // 从 script_url 提取文件名（如 "scripts/bootstrap-dsh.sh" → "bootstrap-dsh.sh"）
+    let fname = script_url
+        .and_then(|url| url.rsplit('/').next())
+        .unwrap_or_else(|| {
+            // 兼容旧版无 script_url 时按 id 猜测命名
+            let fname = format!("bootstrap-{}.sh", id.replace('_', "-"));
+            Box::leak(fname.into_boxed_str())
+        });
     let path = dir.join("scripts").join(fname);
-    std::fs::read_to_string(&path).unwrap_or_else(|_| builtin_bootstrap(id).to_string())
+    std::fs::read_to_string(&path).unwrap_or_else(|_| builtin_fallback(id).to_string())
+}
+
+/// 回退到编译期内置的脚本内容。
+fn builtin_fallback(id: &str) -> &'static str {
+    // 先尝试精确匹配：bootstrap-<service_id>.sh
+    for (name, _) in all_scripts() {
+        let script_id = name
+            .strip_prefix("bootstrap-")
+            .and_then(|s| s.strip_suffix(".sh"))
+            .unwrap_or("");
+        if script_id == id {
+            return get_script(name).unwrap_or("");
+        }
+    }
+    // 再尝试 bootstrap-<id_with_underscores>.sh（兼容旧版命名）
+    let fname = format!("bootstrap-{}.sh", id.replace('-', "_"));
+    if let Some(content) = get_script(&fname) {
+        return content;
+    }
+    // 最后回退到 bootstrap-dsh.sh
+    get_script("bootstrap-dsh.sh").unwrap_or("")
 }
 
 /// 安装日志事件负载：stream 为 "info" | "out" | "error"，text 为日志文本。
@@ -161,6 +173,7 @@ pub async fn install_service(
     app: AppHandle,
     id: String,
     distro: Option<String>,
+    script_url: Option<String>,
 ) -> Result<(), String> {
     let state = wsl::detect();
     if state.status != "ready" {
@@ -169,7 +182,7 @@ pub async fn install_service(
     let distro = distro.or(state.default_distro).ok_or("无可用发行版")?;
     // 按服务 id 选择对应 bootstrap 脚本（优先读取 exe 旁可编辑脚本，否则用内置默认）。
     // 通过 stdin 喂给 WSL 内的 bash 执行，逐行把输出 emit 到前端做流式日志。
-    let script = load_bootstrap_script(&id);
+    let script = load_bootstrap_script(&id, script_url.as_deref());
     let app = app.clone();
     let (code, _out, err) = wsl::exec_in_distro_stdin(&distro, &script, move |stream, line| {
         // 校验 UTF-8，避免 emit 失败导致安装中断

@@ -75,7 +75,7 @@ install_node() {
       yum install -y nodejs
       ;;
     arch|manjaro)
-      pacman -Syu --noconfirm nodejs npm
+      pacman -Sy --noconfirm nodejs npm
       ;;
     opensuse|opensuse-leap|opensuse-tumbleweed|suse)
       if command -v zypper >/dev/null 2>&1; then
@@ -92,7 +92,7 @@ install_node() {
       case "$DISTRO_LIKE" in
         *debian*|*ubuntu*) curl -fsSL https://deb.nodesource.com/setup_24.x | bash -; apt-get update && apt-get install -y nodejs ;;
         *fedora*|*rhel*|*centos*) curl -fsSL https://rpm.nodesource.com/setup_24.x | bash -; yum install -y nodejs ;;
-        *arch*) pacman -Syu --noconfirm nodejs npm ;;
+        *arch*) pacman -Sy --noconfirm nodejs npm ;;
         *) echo "不支持的发行版: ${DISTRO}，请手动安装 Node.js 22.19+ 或 24+，然后重新运行本脚本。" >&2; exit 1 ;;
       esac
       ;;

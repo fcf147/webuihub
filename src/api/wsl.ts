@@ -43,8 +43,8 @@ export async function checkServiceInstalled(id: string, distro?: string): Promis
   return invoke('check_service_installed', { id, distro })
 }
 
-export async function installService(id: string, distro?: string): Promise<void> {
-  return invoke('install_service', { id, distro })
+export async function installService(id: string, distro?: string, scriptUrl?: string): Promise<void> {
+  return invoke('install_service', { id, distro, scriptUrl })
 }
 
 export async function startService(

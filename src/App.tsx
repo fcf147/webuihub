@@ -97,11 +97,16 @@ export default function App() {
 
   const handleInstall = async (id: string, distro?: string) => {
     const targetDistro = distro ?? selectedDistro ?? '默认'
+    const svc = services.find((s) => s.id === id)
+    if (!svc) {
+      appendLog('error', `未找到服务 ${id}`)
+      return
+    }
     setBusy(true)
     setRuntime({ id, status: 'installing', url: null, version: null })
     appendLog('info', `开始安装 ${id}（发行版: ${targetDistro}）…`)
     try {
-      await wslApi.installService(id, distro ?? selectedDistro ?? undefined)
+      await wslApi.installService(id, distro ?? selectedDistro ?? undefined, svc.install.script_url)
       appendLog('info', `${id} 安装完成`)
       setRuntime({ id, status: 'installed', url: null, version: null })
     } catch (e) {

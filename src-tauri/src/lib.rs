@@ -28,7 +28,7 @@ pub fn run() {
             commands::get_services_config,
         ])
         .setup(|_app| {
-            // 首次运行：确保 exe 旁生成可编辑的 config/services.yaml 与 scripts/bootstrap-dsh.sh
+            // 首次运行：确保 exe 旁生成可编辑的 config/services.yaml 与 scripts/ 下所有引导脚本
             commands::ensure_runtime_files();
             Ok(())
         })

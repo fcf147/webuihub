@@ -34,14 +34,17 @@ install_python() {
       apt-get update && apt-get install -y python3 python3-venv python3-pip
       ;;
     fedora)
-      dnf install -y python3 python3-pip
+      dnf install -y python3 python3-venv python3-pip
       ;;
     centos|rhel|rocky|almalinux)
       # EPEL 提供 python3-pip
-      yum install -y python3 python3-pip || dnf install -y python3 python3-pip
+      dnf install -y epel-release 2>/dev/null || true
+      dnf install -y python3 python3-venv python3-pip 2>/dev/null || \
+        yum install -y epel-release python3 python3-pip 2>/dev/null || \
+        { echo "    警告: 无法通过 EPEL 安装 python3-pip，请手动安装后重试。" >&2; exit 1; }
       ;;
     arch|manjaro)
-      pacman -Syu --noconfirm python python-pip
+      pacman -Sy --noconfirm python python-pip
       ;;
     opensuse*|suse)
       zypper --non-interactive install python3 python3-pip
@@ -52,8 +55,8 @@ install_python() {
     *)
       case "$DISTRO_LIKE" in
         *debian*|*ubuntu*) apt-get update && apt-get install -y python3 python3-venv python3-pip ;;
-        *fedora*|*rhel*|*centos*) dnf install -y python3 python3-pip || yum install -y python3 python3-pip ;;
-        *arch*) pacman -Syu --noconfirm python3 python-pip ;;
+        *fedora*|*rhel*|*centos*) dnf install -y python3 python3-venv python3-pip || yum install -y python3 python3-pip ;;
+        *arch*) pacman -Sy --noconfirm python3 python-pip ;;
         *) echo "不支持的发行版: ${DISTRO}，请手动安装 Python3.11+ 与 pip，然后重新运行本脚本。" >&2; exit 1 ;;
       esac
       ;;
@@ -62,8 +65,22 @@ install_python() {
 
 if py_ok; then
   echo "    Python 已就绪（$(python3 --version 2>&1)）"
+  PY_VER="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)"
+  if python3 -c "import sys; exit(0 if sys.version_info >= (3,11) else 1)" 2>/dev/null; then
+    echo "    Python 版本 ${PY_VER} ✓（需要 ≥3.11）"
+  else
+    echo "    错误: Python 版本 ${PY_VER} 过低，Open WebUI 需要 Python 3.11+" >&2
+    exit 1
+  fi
 else
   install_python
+  # 安装后再次验证版本
+  PY_VER="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)"
+  if ! python3 -c "import sys; exit(0 if sys.version_info >= (3,11) else 1)" 2>/dev/null; then
+    echo "    错误: 安装后 Python 版本仍为 ${PY_VER}，需要 ≥3.11。请手动安装 Python 3.11+ 后重试。" >&2
+    exit 1
+  fi
+  echo "    Python 版本 ${PY_VER} ✓（需要 ≥3.11）"
 fi
 
 # 为隔离依赖，使用独立的 venv（避免污染系统 site-packages）。
@@ -81,7 +98,11 @@ python3 -m pip install --upgrade pip
 python3 -m pip install --index-url "$PIP_INDEX" open-webui
 
 echo "==> 验证安装..."
-"$VENV_DIR/bin/open-webui" --help >/dev/null 2>&1 && echo "    open-webui 可执行" || echo "    警告: 无法验证 open-webui，请检查安装日志"
+if test -f "$VENV_DIR/bin/open-webui"; then
+  echo "    open-webui 可执行文件存在（$VENV_DIR/bin/open-webui）"
+else
+  echo "    警告: 未找到 open-webui 可执行文件，请检查安装日志" >&2
+fi
 
 echo "==> Open WebUI 安装完成"
 echo "    启动命令（由壳 autostart 调用）: $VENV_DIR/bin/open-webui serve --port 8080"
