@@ -67,8 +67,11 @@ HERMES_DIR="/usr/local/lib/hermes-agent"
 if [ -d "$HERMES_DIR/venv" ] && [ -f "$HERMES_DIR/venv/bin/activate" ]; then
   echo "    venv: $HERMES_DIR/venv"
   # 在 venv 内安装 dashboard 所需 Python 依赖；失败不中断，给出手动提示。
-  ( cd "$HERMES_DIR" && source venv/bin/activate && uv pip install -e ".[web,pty]" ) \
-    || echo "（[web,pty] 安装失败，dashboard 可能无法启动；可手动执行：cd $HERMES_DIR && source venv/bin/activate && uv pip install -e \".[web,pty]\"）"
+  # 优先用 uv（安装器可能把受管 uv 放在 /usr/local/share/uv 下但未加入 PATH），
+  # 找不到时回退 venv 自带的 pip（python -m pip）。
+  ( cd "$HERMES_DIR" && source venv/bin/activate \
+      && if command -v uv >/dev/null 2>&1; then uv pip install -e ".[web,pty]"; else python -m pip install -e ".[web,pty]"; fi ) \
+    || echo "（[web,pty] 安装失败，dashboard 可能无法启动；可手动执行：cd $HERMES_DIR && source venv/bin/activate && python -m pip install -e \".[web,pty]\"）"
 else
   echo "未找到 Hermes venv（$HERMES_DIR），跳过 web extra 安装"
 fi
