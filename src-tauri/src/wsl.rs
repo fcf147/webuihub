@@ -154,6 +154,19 @@ pub fn is_open_webui_installed(distro: &str) -> bool {
     out.trim() == "1"
 }
 
+/// 检测指定发行版内 Hermes Agent 是否已安装（检查 venv 内可执行）。
+/// FHS root 安装：/usr/local/lib/hermes-agent/venv/bin/hermes
+/// 普通用户安装：$HOME/.hermes/hermes-agent/venv/bin/hermes
+pub fn is_hermes_agent_installed(distro: &str) -> bool {
+    let probe = r#"test -x /usr/local/lib/hermes-agent/venv/bin/hermes \
+-o -x "$HOME/.hermes/hermes-agent/venv/bin/hermes" && echo 1 || echo 0"#;
+    let (code, out, _err) = exec_in_distro(distro, probe);
+    if code != 0 {
+        return false;
+    }
+    out.trim() == "1"
+}
+
 /// 检测 WSL 整体状态。
 pub fn detect() -> WslState {
     let platform = if is_windows() { "win32" } else { "other" };

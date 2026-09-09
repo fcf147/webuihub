@@ -129,6 +129,7 @@ pub fn check_service_installed(id: String, distro: Option<String>) -> bool {
         Some(d) => match id.as_str() {
             "deepseek_harness" => wsl::is_dsh_installed(&d),
             "open_webui" => wsl::is_open_webui_installed(&d),
+            "hermes_agent" => wsl::is_hermes_agent_installed(&d),
             _ => false,
         },
         None => false,
