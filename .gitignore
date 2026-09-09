@@ -16,3 +16,4 @@ runtime/
 # Windows 下载标记文件（NTFS 数据流标记；冒号文件名 glob 无法匹配，故写死字面量）
 *.Zone.Identifier
 logo.png:Zone.Identifier
+pat
