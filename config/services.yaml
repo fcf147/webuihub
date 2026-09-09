@@ -63,10 +63,12 @@ services:
       type: wsl_script
       script_url: "scripts/bootstrap-hermes.sh"
     autostart:
-      # hermes dashboard 默认绑定 127.0.0.1:9119；--host 0.0.0.0 便于 WSL 端口转发到 Windows。
-      # 安全提示：绑定 0.0.0.0 会暴露到本机网络，Web Dashboard 自身无认证；
-      # 仅在信任的本地网络使用，公网绑定需额外鉴权（见 Hermes Agent 文档）。
-      cmd: "hermes dashboard --host 0.0.0.0 --port 9119"
+      # hermes dashboard 默认绑定 127.0.0.1:9119。
+      # 必须绑定回环地址而非 0.0.0.0：v0.21 起非回环绑定会强制启用鉴权网关，
+      # 未配置用户名/密码或 OAuth 时服务 fail-closed 拒绝启动（健康检查即失败）。
+      # Windows 侧通过 WSL 的 localhost 端口转发访问 127.0.0.1:9119（与其他服务一致）。
+      # --no-open 禁止自动打开浏览器（WSL 无图形界面，避免报错/挂起）。
+      cmd: "hermes dashboard --host 127.0.0.1 --port 9119 --no-open"
     depends_on: ["wsl"]
 
   # 预留（暂未实现）：
